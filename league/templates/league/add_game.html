@@ -1,0 +1,46 @@
+{% extends "league/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %}{{ season.season_name }} | Report game results{% endblock %}
+
+{% block content %}
+<div class="col-lg-6 col-md-8 col-sm-10 p-4">
+    <div class="card">
+        <div class="card-header text-center">
+            {{ season.season_name }}
+        </div>
+        <div class="card-body">
+            <form action="{% url 'league:add_game' season.season_slug %}" method="post">
+                {% csrf_token %}
+                <fieldset>
+                    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                    <div class="row mb-3">
+                        {% bootstrap_form gameForm layout="horizontal" %}
+                    </div>
+                    {% if playerSet.managment_form.errors %}
+                        {% for error in layerSet.managment_form.errors %}
+                            {{ error|escape }}
+                        {% endfor %}
+                    {% endif %}
+                    {{ playerSet.management_form }}
+                    {% if playerSet.non_form_errors %}
+                        {% for error in playerSet.non_form_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error|escape }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% for playerForm in playerSet %}
+                    <div class="row mb-3">
+                        {% bootstrap_form playerForm layout="horizontal" %}
+                    </div>
+                    {% endfor %} 
+                </fieldset>
+                <div class="d-grid">
+                    <input type="submit" class="btn btn-outline-primary" value="Submit">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

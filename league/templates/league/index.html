@@ -1,0 +1,12 @@
+{% extends "league/base.html" %}
+
+{% block title %}Simple Leagues{% endblock %}
+
+{% block content %}
+    {% for season in seasons.all %}
+        <div class="col-lg-4 col-md-5 col-sm-10 p-4">
+            {% include "league/components/season_header.html" with season=season %}
+            {% include "league/components/season_ranks.html" with ranks=season.rank_set.all|dictsortreversed:"score" %}
+        </div>
+    {% endfor %}
+{% endblock %}

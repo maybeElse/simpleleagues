@@ -1,0 +1,17 @@
+{% extends "league/base.html" %}
+
+{% block title %}{{ season.season_name }}{% endblock %}
+
+{% block content %}
+    <div class="col-lg-8 col-md-9 col-sm-10 p-4">
+        {% include "league/components/season_header.html" %}
+        <div class="row">
+            <div class="col-md-6 col-sm-12 px-4 my-2">
+                {% include "league/components/season_ranks.html" with ranks=season.rank_set.all|dictsortreversed:"score"  %}
+            </div>
+            <div class="col-md-6 col-sm-12 px-4 my-2">
+                {% include "league/components/season_games.html" %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

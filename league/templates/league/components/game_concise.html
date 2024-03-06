@@ -1,0 +1,16 @@
+<div class="card mb-3">
+    <div class="card-body overflow-hidden">
+        <p>
+            {{ game.game_date }}
+        </p>
+        <table class="table">
+            {% for score in game.score_set.all|dictsortreversed:"score_impact" %}
+            <tr>
+                <td>{{ score.score_impact }}</td>
+                <td>{{ score.score_final }}</td>
+                <td>{{ score.player_name.player_name }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

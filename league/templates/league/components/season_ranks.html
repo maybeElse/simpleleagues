@@ -1,0 +1,16 @@
+<div class="card">
+    <div class="card-header text-center">
+        Current Ranks
+    </div>
+    <div class="card-body">
+        {% for rank in ranks %}
+            <div>
+                {{ rank.score }} - 
+                <a href="{% url 'league:player' rank.player_name.player_name %}">
+                    {{ rank.player_name.player_name }}
+                </a>
+            </div>
+        {% endfor %}
+    {% include "league/components/pagination.html" with page_obj=ranks token="rpage" %}
+    </div>
+</div>

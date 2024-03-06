@@ -1,0 +1,16 @@
+<div class="card">
+    <div class="card-header text-center">
+        Game History
+    </div>
+    <div class="card-body">
+        <div class="text-center pb-3">
+            <a href="{% url 'league:add_game' season.season_slug %}" class="btn btn-outline-light btn-sm">add game results</a>
+        </div>
+        {% for game in games|dictsortreversed:"id" %}
+            <div>
+                {% include "league/components/game_concise.html" with game=game %}
+            </div>
+        {% endfor %}
+    {% include "league/components/pagination.html" with page_obj=games token="gpage" %}
+    </div>
+</div>

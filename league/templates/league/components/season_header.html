@@ -1,0 +1,22 @@
+<div class="text-center">
+    <h1>
+        <a href="{% url 'league:season' season.season_slug %}">
+            {{ season.season_name }}
+        </a>
+    </h1>
+    <h5>
+        {{ season_type.label }}
+    </h5>
+    <h6>
+        +{{ season.uma_big }}
+        /
+        +{{ season.uma_small }}
+        /
+        -{{ season.uma_small }}
+        /
+        -{{ season.uma_big }}
+        {% if season.season_oka is not 0 %}
+            | Oka: {{ season.season_oka }}
+        {% endif %}
+    </h6>
+</div>
