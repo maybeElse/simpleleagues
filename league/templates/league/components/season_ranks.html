@@ -3,14 +3,20 @@
         Current Ranks
     </div>
     <div class="card-body">
+        <table class="table table-hover">
         {% for rank in ranks %}
-            <div>
-                {{ rank.score }} - 
-                <a href="{% url 'league:player' rank.player_name.player_name %}">
-                    {{ rank.player_name.player_name }}
-                </a>
-            </div>
+            <tr>
+                <td class="text-end">
+                    {{ rank.score }}
+                </td>
+                <td>
+                    <a href="{% url 'league:player' rank.player_name.player_name %}">
+                        {{ rank.player_name.player_name }}
+                    </a>
+                </td> 
+            </tr>
         {% endfor %}
+        </table>
     {% include "league/components/pagination.html" with page_obj=ranks token="rpage" %}
     </div>
 </div>

@@ -3,7 +3,7 @@
         <p>
             {{ game.game_date }}
         </p>
-        <table class="table">
+        <table class="table table-sm">
             {% for score in game.score_set.all|dictsortreversed:"score_impact" %}
             <tr>
                 <td>{{ score.score_impact }}</td>
