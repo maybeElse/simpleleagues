@@ -56,41 +56,44 @@ def add_game(request, season_slug):
             scores = []
             for player in playerSet:
                 scores.append(
-                    (
-                        player.cleaned_data.get("endPoints"), 
-                        Player.objects.get_or_create(player_name = player.cleaned_data.get("playerName"))
-                    )
+                    {
+                        "score": player.cleaned_data.get("endPoints"), 
+                        "player": Player.objects.get_or_create(player_name = player.cleaned_data.get("playerName"))[0]
+                    }
                 )
-            scores = sorted(scores)
-            for scoreTuple in scores:
+            # scores = sorted(scores, key=lambda d: d['score'])
+
+            if season.season_type is season.GameTypes.riichi:
+                uma_spread = [season.uma_big, season.uma_small, -season.uma_small, -season.uma_big]
+            elif season.season_type is season.GameTypes.sanma:
+                uma_spread = [season.uma_big, 0, season.uma_small]
+
+            for scoreAndPlayer in scores:
                 place=1
-                tie=1
+                tied=1
                 for i in scores:
-                    if i is scoreTuple:
+                    if i is scoreAndPlayer:
                         continue
-                    elif i[0] > scoreTuple[0]:
+                    elif i.get("score") > scoreAndPlayer.get("score"):
                         place += 1
-                    elif i[0] == scoreTuple[0]:
-                        tie += 1
-                uma = sum([
-                        season.uma_big, season.uma_small,
-                        -season.uma_small, -season.uma_big
-                    ][place-1:][:tie])/tie
+                    elif i.get("score") == scoreAndPlayer.get("score"):
+                        tied += 1
+                uma = sum([uma_spread][place-1:][:tied])/tied
 
 
-                player_score = (scoreTuple[0] - season.season_starting_points)/1000 + season.season_oka + uma
+                player_score = (scoreAndPlayer.get("score") - season.season_starting_points)/1000 + season.season_oka + uma
 
                 Score.objects.create(
-                    player_name = scoreTuple[1][0],
+                    player_name = scoreAndPlayer.get("player"),
                     game_id = game,
-                    score_final = scoreTuple[0],
+                    score_final = scoreAndPlayer.get("score"),
                     score_position = Score.ScorePositions(place),
                     score_uma = uma,
                     score_impact = player_score
                 )
 
                 rank, created = Rank.objects.get_or_create(
-                    player_name = scoreTuple[1][0],
+                    player_name = scoreAndPlayer.get("player"),
                     season_id = season
                 )
                 rank.score = rank.score + player_score
