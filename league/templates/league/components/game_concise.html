@@ -27,12 +27,12 @@
                 {% endfor %}  
             </table>
             {% if game.discarded_riichi_sticks > 0 %}
-                <p>
-                    {{ game.discarded_riichi_sticks|div:1000|floatformat:"0"  }} riichi sticks were abandoned
-                </p>
-                {% endif %}
+            <p class="px-3">
+                {{ game.discarded_riichi_sticks|div:1000|floatformat:"0"  }} riichi sticks were left on the table.
+            </p>
+            {% endif %}
             {% if game.game_notes %}
-            <p>
+            <p class="px-3">
                 {{ game.game_notes }}
             </p>
             {% endif %}
