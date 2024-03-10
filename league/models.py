@@ -26,7 +26,7 @@ class Season(models.Model):
 
 @total_ordering
 class Player(models.Model):
-    player_name = models.CharField(max_length=32, unique=True, primary_key=True)
+    player_name = models.CharField(max_length=32, unique=True)
     
     def __eq__(self, other):
         # if not self._is_valid_operand(other):
@@ -43,6 +43,8 @@ class Game(models.Model):
     season_id = models.ForeignKey(Season, on_delete=models.PROTECT)
     game_notes = models.TextField(blank=True)
     game_date = models.DateField(default=date.today)
+    game_number_in_season = models.IntegerField(default=1)
+    discarded_riichi_sticks = models.IntegerField(default=0, null=True)
 
 class Score(models.Model):
     player_name = models.ForeignKey(Player, on_delete=models.PROTECT)
