@@ -14,7 +14,7 @@ def index(request):
 
 def season(request, season_slug, gpage=1, rpage=1):
     season = get_object_or_404(Season, season_slug=season_slug)
-    game_paginator = Paginator(Game.objects.filter(season_id=season).order_by("game_date"), 10)
+    game_paginator = Paginator(Game.objects.filter(season_id=season).order_by("-id"), 10)
     page_obj = game_paginator.get_page(request.GET.get("gpage"))
     rank_paginator = Paginator(Rank.objects.filter(season_id=season).order_by("score"), 10)
     rank_obj = rank_paginator.get_page(request.GET.get("rpage"))
@@ -40,7 +40,7 @@ def add_game(request, season_slug):
     season = get_object_or_404(Season, season_slug=season_slug)
 
     if not season.season_active:
-        return redirect('index')
+        return redirect('league:season', season_slug=season_slug)
 
     playerFormSet = formset_factory(
         addPlayerForm, formset=BasePlayerFormSet, extra=season.season_type,
@@ -57,7 +57,8 @@ def add_game(request, season_slug):
             for player in playerSet:
                 scores.append(
                     {
-                        "score": player.cleaned_data.get("endPoints"), 
+                        "score": player.cleaned_data.get("endPoints"),
+                        "penalty": player.cleaned_data.get("penalty"), 
                         "player": Player.objects.get_or_create(player_name = player.cleaned_data.get("playerName"))[0]
                     }
                 )
@@ -74,7 +75,7 @@ def add_game(request, season_slug):
                 season_id = season,
                 discarded_riichi_sticks = gameForm.cleaned_data.get("gameDiscardedRiichi"),
                 game_notes = gameForm.cleaned_data.get("gameNote"),
-                game_number_in_season = Game.objects.filter(season_id=season).count() + 1
+                game_number_in_season = Game.objects.filter(season_id=season).order_by("-id").first().game_number_in_season + 1
             )
 
             for scoreAndPlayer in scores:
@@ -97,6 +98,7 @@ def add_game(request, season_slug):
                     game_id = game,
                     score_final = scoreAndPlayer.get("score"),
                     score_position = Score.ScorePositions(place),
+                    score_penalty = scoreAndPlayer.get("penalty"),
                     score_uma = uma,
                     score_impact = player_score
                 )
