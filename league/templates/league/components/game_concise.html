@@ -1,16 +1,22 @@
 <div class="card mb-3">
-    <div class="card-body overflow-hidden">
-        <p>
-            {{ game.game_date }}
-        </p>
-        <table class="table table-sm">
-            {% for score in game.score_set.all|dictsortreversed:"score_impact" %}
-            <tr>
-                <td>{{ score.score_impact }}</td>
-                <td>{{ score.score_final }}</td>
-                <td>{{ score.player_name.player_name }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+    <div class="card-body overflow-hidden p-1">
+        <div class="d-grid">
+            <a class="btn btn-outline-light btn-sm" role="button" data-bs-toggle="collapse"
+                href="#gameConcise{{ game.id }}" aria-expanded="false"
+                aria-controls="gameConcise{{ game.id }}">
+                Game {{ game.game_number_in_season }}: {{ game.game_date }}
+            </a>
+        </div>
+        <div class="collapse multi-collapse" id="gameConcise{{ game.id }}">
+            <table class="table table-sm">
+                {% for score in game.score_set.all|dictsortreversed:"score_impact" %}
+                <tr>
+                    <td>{{ score.score_impact }}</td>
+                    <td>{{ score.score_final }}</td>
+                    <td>{{ score.player_name.player_name }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 </div>
