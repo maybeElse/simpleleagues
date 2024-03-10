@@ -30,11 +30,27 @@
                             </div>
                         {% endfor %}
                     {% endif %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Player</th>
+                                <th scope="col">Points</th>
+                                <th scope="col">Penalty</th>
+                            </tr>
+                        </thead>
                     {% for playerForm in playerSet %}
-                    <div class="row mb-3">
+                        <tr>
+                            {% for field in playerForm %}
+                            <td>
+                                {{ field }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                    <!-- <div class="row mb-3">
                         {% bootstrap_form playerForm layout="horizontal" %}
-                    </div>
-                    {% endfor %} 
+                    </div> -->
+                    {% endfor %}
+                    </table>
                 </fieldset>
                 <div class="d-grid">
                     <input type="submit" class="btn btn-outline-primary" value="Submit">

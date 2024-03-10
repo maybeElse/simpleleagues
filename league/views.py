@@ -32,12 +32,15 @@ def game(request, game_id, season_slug):
     return render(request, "league/game.html", {"game": game, "season": season})
 
 def player(request, player_name, season_slug=None):
-    player = get_object_or_404(Player, pk=player_name)
-    season = get_object_or_404(Season, season_slug=season_slug)
+    player = get_object_or_404(Player, player_name=player_name)
+    # season = get_object_or_404(Season, season_slug=season_slug)
     return render(request, "league/player.html", {"player": player, "season": season})
 
 def add_game(request, season_slug):
     season = get_object_or_404(Season, season_slug=season_slug)
+
+    if not season.season_active:
+        return redirect('index')
 
     playerFormSet = formset_factory(
         addPlayerForm, formset=BasePlayerFormSet, extra=season.season_type,
@@ -47,12 +50,9 @@ def add_game(request, season_slug):
 
     if request.method == "POST":
         gameForm = addGameForm(request.POST)
-        playerSet = playerFormSet(request.POST)
+        playerSet = playerFormSet(request.POST, gameForm=gameForm)
         playerSet.season = season
         if gameForm.is_valid() and playerSet.is_valid():
-            game = Game.objects.create(
-                season_id = season, game_notes = gameForm.cleaned_data.get("gameNote")
-            )
             scores = []
             for player in playerSet:
                 scores.append(
@@ -63,10 +63,19 @@ def add_game(request, season_slug):
                 )
             # scores = sorted(scores, key=lambda d: d['score'])
 
-            if season.season_type is season.GameTypes.riichi:
+            if Season.GameTypes(season.season_type) is Season.GameTypes.riichi:
                 uma_spread = [season.uma_big, season.uma_small, -season.uma_small, -season.uma_big]
-            elif season.season_type is season.GameTypes.sanma:
+            elif Season.GameTypes(season.season_type) is Season.GameTypes.sanma:
                 uma_spread = [season.uma_big, 0, season.uma_small]
+            else:
+                raise exceptions.ImproperlyConfigured("Season misconfigured?")
+
+            game = Game.objects.create(
+                season_id = season,
+                discarded_riichi_sticks = gameForm.cleaned_data.get("gameDiscardedRiichi"),
+                game_notes = gameForm.cleaned_data.get("gameNote"),
+                game_number_in_season = Game.objects.filter(season_id=season).count() + 1
+            )
 
             for scoreAndPlayer in scores:
                 place=1
@@ -78,10 +87,10 @@ def add_game(request, season_slug):
                         place += 1
                     elif i.get("score") == scoreAndPlayer.get("score"):
                         tied += 1
-                uma = sum([uma_spread][place-1:][:tied])/tied
+                uma = sum(uma_spread[place-1:][:tied])/tied
 
 
-                player_score = (scoreAndPlayer.get("score") - season.season_starting_points)/1000 + season.season_oka + uma
+                player_score = (scoreAndPlayer.get("score") - season.season_starting_points)/1000 + season.season_oka + uma - scoreAndPlayer.get("penalty")
 
                 Score.objects.create(
                     player_name = scoreAndPlayer.get("player"),
