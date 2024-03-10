@@ -5,7 +5,7 @@
         </a>
     </h1>
     <h5>
-        {{ season_type.label }}
+        {{ season.get_season_type_display }}
     </h5>
     <h6>
         +{{ season.uma_big }}
@@ -19,4 +19,9 @@
             | Oka: {{ season.season_oka }}
         {% endif %}
     </h6>
+    {% if season.season_notes %}
+    <h6>
+        {{ season.season_notes }}
+    </h6>
+    {% endif %}
 </div>

@@ -1,3 +1,5 @@
+{% load mathfilters %}
+
 <div class="card mb-3">
     <div class="card-body overflow-hidden p-1">
         <div class="d-grid">
@@ -11,12 +13,29 @@
             <table class="table table-sm">
                 {% for score in game.score_set.all|dictsortreversed:"score_impact" %}
                 <tr>
-                    <td>{{ score.score_impact }}</td>
-                    <td>{{ score.score_final }}</td>
+                    <td style="width:6rem">
+                        {{ score.score_impact }}
+                        {% if score.score_penalty %} 
+                        (<span class="text-danger">
+                            -{{ score.score_penalty }}
+                        </span>)
+                        {% endif %}
+                    </td>
+                    <td style="width:6rem">{{ score.score_final }}</td>
                     <td>{{ score.player_name.player_name }}</td>
                 </tr>
-                {% endfor %}
+                {% endfor %}  
             </table>
+            {% if game.discarded_riichi_sticks > 0 %}
+                <p>
+                    {{ game.discarded_riichi_sticks|div:1000|floatformat:"0"  }} riichi sticks were abandoned
+                </p>
+                {% endif %}
+            {% if game.game_notes %}
+            <p>
+                {{ game.game_notes }}
+            </p>
+            {% endif %}
         </div>
     </div>
 </div>

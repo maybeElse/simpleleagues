@@ -12,9 +12,8 @@ class addPlayerForm(forms.Form):
                                 widget=forms.NumberInput(
                                     attrs={'class': 'form-control', 'placeholder': 'Final score'}
                                 ))
-    penalty = forms.IntegerField(label="Penalty (only if points discarded)", step_size=1000, required=False,
-                                max_value=1000,
-                                min_value=0,
+    penalty = forms.IntegerField(label="Penalty (only if points discarded)", required=False,
+                                max_value=100, min_value=0, initial=0,
                                 widget=forms.NumberInput(
                                     attrs={'class': 'form-control', 'placeholder': 'Penalty (if any)'}
                                 ))
@@ -27,6 +26,7 @@ class addGameForm(forms.Form):
                                ))
     gameNote = forms.CharField(label="Notes", max_length=1000, widget=forms.Textarea(attrs={"rows":"2"}), required=False)
     gameDiscardedRiichi = forms.IntegerField(label="Lost sticks", step_size=1000, required=False,
+                                min_value=0,
                                 widget = forms.NumberInput(
                                     attrs={'placeholder': 'Riichi sticks left on table (if any)'}
                                 ))

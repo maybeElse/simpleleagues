@@ -12,16 +12,18 @@
 <body data-bs-theme="dark">
     <div id="container">
         {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-                    {{ message }}
-                </li>
-            {% endfor %}
-            </ul>
+        <div class="row justify-content-center fixed-top">
+            <div class="col-lg-4 col-md-6 col-sm-10 p-4">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
         {% endif %}
-
-        <div class="row justify-content-center">
+        <div class="row justify-content-center"> 
             {% block content %}{% endblock %}
         </div>
     </div>
