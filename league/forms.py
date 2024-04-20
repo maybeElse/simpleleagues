@@ -64,13 +64,13 @@ class BasePlayerFormSet(BaseFormSet):
                 
                 point_tally += points
 
-        if point_tally != (len(players) * self.season.season_starting_points):
-            print((len(players) * self.season.season_starting_points))
+        if point_tally != (len(players) * self.season.starting_points):
+            print((len(players) * self.season.starting_points))
             print(point_tally)
             for form in self.forms:
                 form.add_error(field="endPoints", error="")
             raise forms.ValidationError(
                 'Final points do not match starting points! %(missing_points)s Missing!',
-                params={"missing_points": abs((len(players) * self.season.season_starting_points) - point_tally)},
+                params={"missing_points": abs((len(players) * self.season.starting_points) - point_tally)},
                 code='point_error'
             )
