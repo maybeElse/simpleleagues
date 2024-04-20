@@ -3,9 +3,9 @@
         Game History
     </div>
     <div class="card-body">
-        {% if season.season_active %}
+        {% if season.active %}
         <div class="text-center pb-3">
-            <a href="{% url 'league:add_game' season.season_slug %}" class="btn btn-outline-light btn-sm">add game results</a>
+            <a href="{% url 'league:add_game' season.slug %}" class="btn btn-outline-light btn-sm">add game results</a>
         </div>
         {% endif %}
         {% for game in games|dictsortreversed:"id" %}

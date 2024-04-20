@@ -12,32 +12,32 @@ class Season(models.Model):
         sanma = 3, _("Sanma (3-player)")
         riichi = 4, _("Riichi Mahjong (4-player)")
     season_type = models.IntegerField(choices=GameTypes, default=GameTypes.riichi)
-    season_active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
 
-    season_starting_points = models.IntegerField(choices=[(25000,"25,000"),(30000,"30,000"),(35000,"35,000")], default=30000)
-    season_oka = models.IntegerField(default=0)
-    
+    starting_points = models.IntegerField(choices=[(25000,"25,000"),(30000,"30,000"),(35000,"35,000")], default=30000)
+
+    oka = models.IntegerField(default=0)   
     uma_big = models.IntegerField(default=20)
     uma_small = models.IntegerField(default=10)
 
-    season_slug = models.SlugField(unique=True, null=False)
+    slug = models.SlugField(unique=True, null=False)
     def get_absolute_url(self):
-        return reverse("season", kwargs={"slug": self.season_slug})
+        return reverse("season", kwargs={"slug": self.slug})
 
 @total_ordering
 class Player(models.Model):
-    player_name = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=32, unique=True)
     
     def __eq__(self, other):
         # if not self._is_valid_operand(other):
         #     return NotImplemented
-        return ((self.player_name.lower(), self.player_name.lower()) ==
-                (other.player_name.lower(), other.player_name.lower()))
+        return ((self.name.lower(), self.name.lower()) ==
+                (other.name.lower(), other.name.lower()))
     def __lt__(self, other):
         # if not self._is_valid_operand(other):
         #     return NotImplemented
-        return ((self.player_name.lower(), self.player_name.lower()) <
-                (other.player_name.lower(), other.player_name.lower()))
+        return ((self.name.lower(), self.name.lower()) <
+                (other.name.lower(), other.name.lower()))
 
 class Game(models.Model):
     season_id = models.ForeignKey(Season, on_delete=models.PROTECT)

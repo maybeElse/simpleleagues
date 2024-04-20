@@ -7,13 +7,14 @@ from django.core import exceptions
 
 from .models import *
 from .forms import *
+from .logic import *
 
 def index(request):
-    seasons = Season.objects.filter(season_active=True)
+    seasons = Season.objects.filter(active=True)
     return render(request, "league/index.html", {"seasons": seasons})
 
 def season(request, season_slug, gpage=1, rpage=1):
-    season = get_object_or_404(Season, season_slug=season_slug)
+    season = get_object_or_404(Season, slug=season_slug)
     game_paginator = Paginator(Game.objects.filter(season_id=season).order_by("-id"), 10)
     page_obj = game_paginator.get_page(request.GET.get("gpage"))
     rank_paginator = Paginator(Rank.objects.filter(season_id=season).order_by("score"), 10)
@@ -28,18 +29,18 @@ def season(request, season_slug, gpage=1, rpage=1):
 
 def game(request, game_id, season_slug):
     game = get_object_or_404(Game, pk=game_id)
-    season = get_object_or_404(Season, season_slug=season_slug)
+    season = get_object_or_404(Season, slug=season_slug)
     return render(request, "league/game.html", {"game": game, "season": season})
 
 def player(request, player_name, season_slug=None):
-    player = get_object_or_404(Player, player_name=player_name)
+    player = get_object_or_404(Player, name=player_name)
     # season = get_object_or_404(Season, season_slug=season_slug)
     return render(request, "league/player.html", {"player": player, "season": season})
 
 def add_game(request, season_slug):
     season = get_object_or_404(Season, season_slug=season_slug)
 
-    if not season.season_active:
+    if not season.active:
         return redirect('league:season', season_slug=season_slug)
 
     playerFormSet = formset_factory(
@@ -91,7 +92,7 @@ def add_game(request, season_slug):
                 uma = sum(uma_spread[place-1:][:tied])/tied
 
 
-                player_score = (scoreAndPlayer.get("score") - season.season_starting_points)/1000 + season.season_oka + uma - scoreAndPlayer.get("penalty")
+                player_score = (scoreAndPlayer.get("score") - season.starting_points)/1000 + season.oka + uma - scoreAndPlayer.get("penalty")
 
                 Score.objects.create(
                     player_name = scoreAndPlayer.get("player"),
@@ -108,6 +109,7 @@ def add_game(request, season_slug):
                     season_id = season
                 )
                 rank.score = rank.score + player_score
+
                 rank.save()
 
             messages.success(request, "Added game")

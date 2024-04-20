@@ -10,7 +10,7 @@
             {{ season.season_name }}
         </div>
         <div class="card-body">
-            <form action="{% url 'league:add_game' season.season_slug %}" method="post">
+            <form action="{% url 'league:add_game' season.slug %}" method="post">
                 {% csrf_token %}
                 <fieldset>
                     {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}

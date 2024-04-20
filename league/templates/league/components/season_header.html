@@ -1,6 +1,6 @@
 <header class="text-center">
     <h1>
-        <a href="{% url 'league:season' season.season_slug %}">
+        <a href="{% url 'league:season' season.slug %}">
             {{ season.season_name }}
         </a>
     </h1>
@@ -15,8 +15,8 @@
         -{{ season.uma_small }}
         /
         -{{ season.uma_big }}
-        {% if season.season_oka is not 0 %}
-            | Oka: {{ season.season_oka }}
+        {% if season.oka is not 0 %}
+            | Oka: {{ season.oka }}
         {% endif %}
     </h6>
     {% if season.season_notes %}
