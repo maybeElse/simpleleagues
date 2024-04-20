@@ -19,6 +19,9 @@
             | Oka: {{ season.oka }}
         {% endif %}
     </h6>
+    <h6>
+        {{ season.get_scoring_display|capfirst }}
+    </h6>
     {% if season.season_notes %}
     <h6>
         {{ season.season_notes }}

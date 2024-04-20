@@ -20,6 +20,15 @@ class Season(models.Model):
     uma_big = models.IntegerField(default=20)
     uma_small = models.IntegerField(default=10)
 
+    class ScoringTypes(models.TextChoices):
+        cumulative = "ADD", _("sum of all scores")
+        average = "AVE", _("average performance")
+        best_3 = "TOP3", _("sum of best 3 scores")
+        best_5 = "TOP5", _("sum of best 5 scores")
+        best_streak_3 = "STR3", _("best 3-game streak")
+        best_streak_5 = "STR5", _("best 5-game streak")
+    scoring = models.TextField(choices=ScoringTypes, default=ScoringTypes.cumulative)
+
     slug = models.SlugField(unique=True, null=False)
     def get_absolute_url(self):
         return reverse("season", kwargs={"slug": self.slug})

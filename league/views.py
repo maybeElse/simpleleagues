@@ -38,7 +38,7 @@ def player(request, player_name, season_slug=None):
     return render(request, "league/player.html", {"player": player, "season": season})
 
 def add_game(request, season_slug):
-    season = get_object_or_404(Season, season_slug=season_slug)
+    season = get_object_or_404(Season, slug=season_slug)
 
     if not season.active:
         return redirect('league:season', season_slug=season_slug)
@@ -60,7 +60,7 @@ def add_game(request, season_slug):
                     {
                         "score": player.cleaned_data.get("endPoints"),
                         "penalty": player.cleaned_data.get("penalty"), 
-                        "player": Player.objects.get_or_create(player_name = player.cleaned_data.get("playerName"))[0]
+                        "player": Player.objects.get_or_create(name = player.cleaned_data.get("playerName"))[0]
                     }
                 )
             # scores = sorted(scores, key=lambda d: d['score'])
@@ -79,38 +79,7 @@ def add_game(request, season_slug):
                 game_number_in_season = Game.objects.filter(season_id=season).order_by("-id").first().game_number_in_season + 1
             )
 
-            for scoreAndPlayer in scores:
-                place=1
-                tied=1
-                for i in scores:
-                    if i is scoreAndPlayer:
-                        continue
-                    elif i.get("score") > scoreAndPlayer.get("score"):
-                        place += 1
-                    elif i.get("score") == scoreAndPlayer.get("score"):
-                        tied += 1
-                uma = sum(uma_spread[place-1:][:tied])/tied
-
-
-                player_score = (scoreAndPlayer.get("score") - season.starting_points)/1000 + season.oka + uma - scoreAndPlayer.get("penalty")
-
-                Score.objects.create(
-                    player_name = scoreAndPlayer.get("player"),
-                    game_id = game,
-                    score_final = scoreAndPlayer.get("score"),
-                    score_position = Score.ScorePositions(place),
-                    score_penalty = scoreAndPlayer.get("penalty"),
-                    score_uma = uma,
-                    score_impact = player_score
-                )
-
-                rank, created = Rank.objects.get_or_create(
-                    player_name = scoreAndPlayer.get("player"),
-                    season_id = season
-                )
-                rank.score = rank.score + player_score
-
-                rank.save()
+            calculate_scores(game, season, scores, uma_spread)
 
             messages.success(request, "Added game")
             return redirect(reverse('league:season', kwargs={"season_slug": season_slug}))
