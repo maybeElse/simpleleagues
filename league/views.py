@@ -63,14 +63,12 @@ def add_game(request, season_slug):
                         "player": Player.objects.get_or_create(name = player.cleaned_data.get("playerName"))[0]
                     }
                 )
-            # scores = sorted(scores, key=lambda d: d['score'])
-
             if Season.GameTypes(season.season_type) is Season.GameTypes.riichi:
                 uma_spread = [season.uma_big, season.uma_small, -season.uma_small, -season.uma_big]
             elif Season.GameTypes(season.season_type) is Season.GameTypes.sanma:
                 uma_spread = [season.uma_big, 0, season.uma_small]
             else:
-                raise exceptions.ImproperlyConfigured("Season misconfigured?")
+                raise exceptions.ImproperlyConfigured("Season type is misconfigured!")
 
             game = Game.objects.create(
                 season_id = season,
@@ -79,7 +77,7 @@ def add_game(request, season_slug):
                 game_number_in_season = Game.objects.filter(season_id=season).order_by("-id").first().game_number_in_season + 1
             )
 
-            calculate_scores(game, season, scores, uma_spread)
+            calculate_and_save_scores(game, season, scores, uma_spread)
 
             messages.success(request, "Added game")
             return redirect(reverse('league:season', kwargs={"season_slug": season_slug}))

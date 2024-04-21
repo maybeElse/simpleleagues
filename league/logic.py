@@ -1,40 +1,30 @@
 from .models import *
 from django.db import models
+from django.core import exceptions
+from collections import Counter
 
-def calculate_scores(game: Game, season: Season, scores: list, uma_spread: list):
-    for scoreAndPlayer in scores:
+def calculate_and_save_scores(game: Game, season: Season, scores: list, uma_spread: list):
+    '''
+    Placement order logic
 
-        '''
-        Logic for determining placement order
+    First, make sure the array is sorted; then, figure out which place each player is in.
+    Account for ties if necessary.
+    '''
+    scores = sorted(scores, key=lambda d: d['score'], reverse=True)
 
-        We could just use sorted(scores, key=lambda d: d['score']) to sort the list by score,
-        but then we'd need to run between 1 and 3 comparisons to check for ties (6-12 in total?)
-        and add some additional logic to figure out which ones to run.
-        So, more code and more complex code.
+    for i, scoreAndPlayer, tied in score_loop_helper(scores):
+        place = i+1
+        if not (tied is 1 or i is 0):
+            for x in range(1, tied):
+                if scores[i-x].get("score") > scoreAndPlayer.get("score"):
+                    break
+                place = i+1-x
 
-        Instead, we calculate each player's placement seperately (by comparing them against the three other players)
-        and reducing their score (1->2->3->4) each time we find someone who performed better than them.
-        We also track how many players they're tied with.
-
-        To calculate the uma, we then slice the uma_spread array to get the relevant uma,
-        and divide them by the number of players they're shared between.
-        '''
-        place=1
-        tied=1
-        for i in scores:
-            if i is scoreAndPlayer:
-                continue
-            elif i.get("score") > scoreAndPlayer.get("score"):
-                place += 1
-            elif i.get("score") == scoreAndPlayer.get("score"):
-                tied += 1
         uma = sum(uma_spread[place-1:][:tied])/tied
-
+        
         '''
-        Calculate the individual score, and then store the player's placement in the database
+        Calculate the individual score and store all of that information in the database
         '''
-        player_score = (scoreAndPlayer.get("score") - season.starting_points)/1000 + season.oka + uma - scoreAndPlayer.get("penalty")
-
         score = Score.objects.create(
             player_name = scoreAndPlayer.get("player"),
             game_id = game,
@@ -42,22 +32,64 @@ def calculate_scores(game: Game, season: Season, scores: list, uma_spread: list)
             score_position = Score.ScorePositions(place),
             score_penalty = scoreAndPlayer.get("penalty"),
             score_uma = uma,
-            score_impact = player_score
+            score_impact = 
+                (scoreAndPlayer.get("score") - season.starting_points)/1000
+                + season.oka + uma - scoreAndPlayer.get("penalty")
         )
 
         '''
         Calculate overall league performance, using whichever score calculation method the season is set to use
         '''
-        rank, created = Rank.objects.get_or_create(
+        rank, created = Rank.objects.update_or_create(
             player_name = scoreAndPlayer.get("player"),
-            season_id = season
+            season_id = season,
+            defaults = {
+                "score": calculate_rank(score, season)
+            }
         )
 
-        rank.score = calculate_rank(score, season)
-
-        rank.save()
+'''
+This is just to make the for loop in calculate_scores() a bit prettier.
+'''
+def score_loop_helper(scores):
+    r = []
+    scoreCount = Counter(item.get("score") for item in scores)
+    for i in range(len(scores)):
+        r.append(
+            (i, scores[i], scoreCount.get(scores[i].get("score"))
+            )
+        )
+    return r
 
 def calculate_rank(score: Score, season: Season):
     scoring = Season.ScoringTypes(season.scoring)
-    # if scoring is Season.ScoringTypes.cumulative:
-    return Score.objects.filter(player_name=score.player_name, game_id__season_id=season).aggregate(models.Sum('score_impact')).get("score_impact__sum")
+    scores = Score.objects.filter(player_name=score.player_name, game_id__season_id=season)
+
+    match scoring:
+        case Season.ScoringTypes.cumulative:
+            return scores.aggregate(models.Sum('score_impact')).get("score_impact__sum")
+        case Season.ScoringTypes.average:
+            return scores.aggregate(models.Sum('score_impact')).get("score_impact__sum")/scores.count()
+        case Season.ScoringTypes.best_3:
+            return best_games(score, season, 3)
+        case Season.ScoringTypes.best_5:
+            return best_games(score, season, 5)
+        case Season.ScoringTypes.best_streak_3:
+            return best_streak(score, season, 3)
+        case Season.ScoringTypes.best_streak_5:
+            return best_streak(score, season, 5)
+        case _:
+            raise exceptions.ImproperlyConfigured("Season scoring is misconfigured!")
+    
+def best_streak(scores, count: int):
+    if scores.count() < count:
+        return 0
+    scores.order_by('game_id__game_number_in_season')
+
+    # TK need to implement
+    return 0
+
+def best_games(scores, count: int):
+    if scores.count() < count:
+        return 0
+    return scores.order_by('-score_impact')[:count].aggregate(models.Sum('score_impact')).get("score_impact__sum")
