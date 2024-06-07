@@ -1,0 +1,3 @@
+In-progress mahjong league tracker, with ranking calculation.
+
+While most of the core logic is complete at this point, there are still some major improvements it needs before it's ready for actual use (mostly related to how it handles player names and adding new players). There's a *lot* of space for user error that probably shouldn't be there; it also needs some sort of system to restrict who can report games (whether a proper account system, which Django makes very easy, or just a shibboleth-style single-password system). So it goes.
